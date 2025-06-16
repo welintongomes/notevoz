@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notas por Voz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5px 11px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .main-controls {
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .voice-btn {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            font-size: 40px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(238, 90, 36, 0.3);
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .voice-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(238, 90, 36, 0.4);
+        }
+
+        .voice-btn:active {
+            transform: scale(0.95);
+        }
+
+        .voice-btn.recording {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 20px rgba(231, 76, 60, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(231, 76, 60, 0);
+            }
+        }
+
+        .btn-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        .search-container {
+            padding: 10px 20px 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-input:focus {
+            border-color: #667eea;
+        }
+
+        .search-voice-btn,
+        .clear-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s ease;
+        }
+
+        .search-voice-btn {
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+            color: white;
+        }
+
+        .clear-btn {
+            background: #f39c12;
+            color: white;
+        }
+
+        .search-voice-btn:hover,
+        .clear-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .notes-list {
+            max-height: 450px;
+            overflow-y: auto;
+            padding: 0 20px 20px;
+        }
+
+        .note-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .note-item:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .note-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .note-content {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .note-date {
+            font-size: 12px;
+            color: #999;
+            margin-top: 8px;
+        }
+
+        .note-actions {
+            float: right;
+            display: flex;
+            gap: 5px;
+        }
+
+        .delete-btn,
+        .play-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .play-btn {
+            background: #27ae60;
+        }
+
+        .play-btn.playing {
+            background: #f39c12;
+        }
+
+        .play-btn:hover,
+        .delete-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 700px;
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .title-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            outline: none;
+        }
+
+        .title-input:focus {
+            border-color: #667eea;
+        }
+
+        .content-textarea {
+            flex: 1;
+            min-height: 150px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            resize: vertical;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .content-textarea:focus {
+            border-color: #667eea;
+        }
+
+        .content-controls {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .content-voice-btn {
+            width: 100%;
+            height: 50px;
+            border-radius: 40px;
+            border: none;
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        /* .content-voice-btn:hover {
+            transform: scale(1.1);
+        } */
+
+        .content-voice-btn.recording {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            animation: pulse 1.5s infinite;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .save-btn,
+        .cancel-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .save-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .cancel-btn {
+            background: #6c757d;
+            color: white;
+        }
+
+        .save-btn:hover,
+        .cancel-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .empty-state p {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .empty-state small {
+            color: #999;
+        }
+
+        .status {
+            text-align: center;
+            padding: 10px;
+            margin: 10px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .status.recording {
+            background: #ffe6e6;
+            color: #c0392b;
+        }
+
+        .status.processing {
+            background: #e6f3ff;
+            color: #2980b9;
+        }
+#manual-title-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 20px 16px;
+    padding: 7px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+#manualTitleInput {
+    flex: 1;
+    padding: 10px 14px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    outline: none;
+    transition: border-color 0.2s ease-in-out;
+}
+
+#manualTitleInput:focus {
+    border-color: #007bff;
+}
+
+#manualTitleBtn {
+    padding: 10px 18px;
+    font-size: 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+#manualTitleBtn:hover {
+    background-color: #0056b3;
+}
+
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎤 Notas por Voz</h1>
+        </div>
+
+        <div class="main-controls">
+            <button class="voice-btn" id="mainVoiceBtn">🎤</button>
+            <div class="btn-label">Toque para falar</div>
+        </div>
+        <div id="manual-title-box">
+            <input type="text" id="manualTitleInput" placeholder="Digite o título da nota" />
+            <button id="manualTitleBtn">Criar nota</button>
+        </div>
+
+
+        <div id="status" class="status" style="display: none;"></div>
+
+        <div class="search-container">
+            <input type="text" class="search-input" id="searchInput" placeholder="Pesquisar nas notas...">
+            <button class="search-voice-btn" id="searchVoiceBtn">🎤</button>
+            <button class="clear-btn" id="clearBtn">✕</button>
+        </div>
+
+        <div class="notes-list" id="notesList">
+            <div class="empty-state">
+                <p>Nenhuma nota ainda</p>
+                <small>Toque no botão acima para criar sua primeira nota</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para editar nota -->
+    <div class="modal" id="noteModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Editar Nota</h2>
+            </div>
+            <input type="text" class="title-input" id="titleInput" placeholder="Título da nota...">
+            <div class="content-controls">
+                <textarea class="content-textarea" id="contentTextarea" placeholder="Conteúdo da nota..."></textarea>
+            </div>
+            <div>
+                <button class="content-voice-btn" id="contentVoiceBtn">🎤</button>
+            </div>
+            <div class="modal-buttons">
+                <button class="save-btn" id="saveBtn">Salvar</button>
+                <button class="cancel-btn" id="cancelBtn">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let db;
+        let recognition;
+        let speechSynthesis = window.speechSynthesis;
+        let currentUtterance = null;
+        let currentPlayingNoteId = null;
+        let isRecording = false;
+        let currentEditingNote = null;
+
+        // Inicializar IndexedDB
+        function initDB() {
+            const request = indexedDB.open('VoiceNotesDB', 1);
+
+            request.onerror = function () {
+                console.error('Erro ao abrir banco de dados');
+            };
+
+            request.onsuccess = function (event) {
+                db = event.target.result;
+                loadNotes();
+            };
+
+            request.onupgradeneeded = function (event) {
+                db = event.target.result;
+                const objectStore = db.createObjectStore('notes', { keyPath: 'id', autoIncrement: true });
+                objectStore.createIndex('title', 'title', { unique: false });
+                objectStore.createIndex('date', 'date', { unique: false });
+            };
+        }
+
+        // Verificar suporte para reconhecimento de voz
+        function initSpeechRecognition() {
+            if ('webkitSpeechRecognition' in window) {
+                recognition = new webkitSpeechRecognition();
+            } else if ('SpeechRecognition' in window) {
+                recognition = new SpeechRecognition();
+            } else {
+                alert('Seu navegador não suporta reconhecimento de voz. Tente usar Chrome ou Edge.');
+                return false;
+            }
+
+            recognition.lang = 'pt-BR';
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            return true;
+        }
+
+        // Elementos DOM
+        const mainVoiceBtn = document.getElementById('mainVoiceBtn');
+        const searchVoiceBtn = document.getElementById('searchVoiceBtn');
+        const contentVoiceBtn = document.getElementById('contentVoiceBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const searchInput = document.getElementById('searchInput');
+        const notesList = document.getElementById('notesList');
+        const noteModal = document.getElementById('noteModal');
+        const titleInput = document.getElementById('titleInput');
+        const contentTextarea = document.getElementById('contentTextarea');
+        const saveBtn = document.getElementById('saveBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const status = document.getElementById('status');
+
+        // Mostrar status
+        function showStatus(message, type = '') {
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+        }
+
+        function hideStatus() {
+            status.style.display = 'none';
+        }
+
+        // Botão principal de voz
+        mainVoiceBtn.addEventListener('click', function () {
+            if (!recognition) return;
+
+            if (isRecording) {
+                recognition.stop();
+                return;
+            }
+
+            isRecording = true;
+            mainVoiceBtn.classList.add('recording');
+            showStatus('🎤 Gravando... Fale o título da sua nota', 'recording');
+
+            recognition.onresult = function (event) {
+                const title = event.results[0][0].transcript;
+                titleInput.value = title;
+                contentTextarea.value = '';
+                currentEditingNote = null;
+                noteModal.style.display = 'block';
+                contentTextarea.focus();
+            };
+
+            recognition.onerror = function () {
+                showStatus('Erro no reconhecimento de voz. Tente novamente.', 'error');
+                isRecording = false;
+                mainVoiceBtn.classList.remove('recording');
+            };
+
+            recognition.onend = function () {
+                isRecording = false;
+                mainVoiceBtn.classList.remove('recording');
+                hideStatus();
+            };
+
+            recognition.start();
+        });
+
+        const manualTitleInput = document.getElementById('manualTitleInput');
+const manualTitleBtn = document.getElementById('manualTitleBtn');
+
+function openNoteFromTitle(title) {
+    if (!title.trim()) {
+        showStatus('Digite um título válido.', 'error');
+        return;
+    }
+
+    titleInput.value = title;
+    contentTextarea.value = '';
+    currentEditingNote = null;
+    noteModal.style.display = 'block';
+    contentTextarea.focus();
+}
+
+// Ao clicar no botão
+manualTitleBtn.addEventListener('click', () => {
+    openNoteFromTitle(manualTitleInput.value);
+});
+
+// Ao pressionar Enter no input
+manualTitleInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        openNoteFromTitle(manualTitleInput.value);
+    }
+});
+
+
+        // Função para escapar HTML e preservar quebras de linha
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Função para truncar texto preservando quebras de linha
+        function truncateText(text, maxLength) {
+            if (text.length <= maxLength) return text;
+            return text.substring(0, maxLength) + '...';
+        }
+
+        // Função para ler nota em voz alta
+        function toggleReadNote(noteId, noteTitle, noteContent) {
+            // Se já está lendo esta nota, pausa/para
+            if (currentPlayingNoteId === noteId) {
+                if (speechSynthesis.speaking && !speechSynthesis.paused) {
+                    speechSynthesis.pause();
+                    updatePlayButton(noteId, '▶️');
+                } else if (speechSynthesis.paused) {
+                    speechSynthesis.resume();
+                    updatePlayButton(noteId, '⏸️');
+                } else {
+                    speechSynthesis.cancel();
+                    currentPlayingNoteId = null;
+                    updatePlayButton(noteId, '▶️');
+                }
+                return;
+            }
+
+            // Para qualquer reprodução anterior
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+            }
+
+            // Inicia nova reprodução
+            const textToRead = `${noteTitle}. ${noteContent}`;
+            currentUtterance = new SpeechSynthesisUtterance(textToRead);
+            currentUtterance.lang = 'pt-BR';
+            currentUtterance.rate = 0.9;
+            currentUtterance.pitch = 1;
+
+            // Atualiza o botão para pause
+            currentPlayingNoteId = noteId;
+            updatePlayButton(noteId, '⏸️');
+
+            currentUtterance.onend = function () {
+                currentPlayingNoteId = null;
+                updatePlayButton(noteId, '▶️');
+            };
+
+            currentUtterance.onerror = function () {
+                currentPlayingNoteId = null;
+                updatePlayButton(noteId, '▶️');
+                showStatus('Erro ao reproduzir áudio', 'error');
+                setTimeout(hideStatus, 2000);
+            };
+
+            speechSynthesis.speak(currentUtterance);
+        }
+
+        // Atualizar botão de play
+        function updatePlayButton(noteId, icon) {
+            const playBtn = document.querySelector(`[data-note-id="${noteId}"] .play-btn`);
+            if (playBtn) {
+                playBtn.textContent = icon;
+                if (icon === '⏸️') {
+                    playBtn.classList.add('playing');
+                } else {
+                    playBtn.classList.remove('playing');
+                }
+            }
+        }
+
+        // Parar reprodução quando modal abrir
+        function stopCurrentReading() {
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+                if (currentPlayingNoteId) {
+                    updatePlayButton(currentPlayingNoteId, '▶️');
+                    currentPlayingNoteId = null;
+                }
+            }
+        }
+
+        // Botão de voz no conteúdo do modal
+        contentVoiceBtn.addEventListener('click', function () {
+            if (!recognition) return;
+
+            showStatus('🎤 Gravando conteúdo...', 'recording');
+            contentVoiceBtn.classList.add('recording');
+
+            const contentRecognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            contentRecognition.lang = 'pt-BR';
+            contentRecognition.continuous = false;
+            contentRecognition.interimResults = false;
+
+            contentRecognition.onresult = function (event) {
+                const newContent = event.results[0][0].transcript;
+                const currentContent = contentTextarea.value;
+
+                // Adiciona o novo conteúdo ao final do texto existente
+                if (currentContent.trim()) {
+                    contentTextarea.value = currentContent + (currentContent.endsWith(' ') ? '' : ' ') + newContent;
+                } else {
+                    contentTextarea.value = newContent;
+                }
+
+                // Move o cursor para o final
+                contentTextarea.focus();
+                contentTextarea.setSelectionRange(contentTextarea.value.length, contentTextarea.value.length);
+            };
+
+            contentRecognition.onerror = function () {
+                showStatus('Erro no reconhecimento de voz. Tente novamente.', 'error');
+                contentVoiceBtn.classList.remove('recording');
+            };
+
+            contentRecognition.onend = function () {
+                contentVoiceBtn.classList.remove('recording');
+                hideStatus();
+            };
+
+            contentRecognition.start();
+        });
+
+        // Botão de pesquisa por voz
+        searchVoiceBtn.addEventListener('click', function () {
+            if (!recognition) return;
+
+            showStatus('🎤 Gravando pesquisa...', 'recording');
+
+            const searchRecognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            searchRecognition.lang = 'pt-BR';
+            searchRecognition.continuous = false;
+            searchRecognition.interimResults = false;
+
+            searchRecognition.onresult = function (event) {
+                const searchText = event.results[0][0].transcript;
+                searchInput.value = searchText;
+                filterNotes(searchText);
+            };
+
+            searchRecognition.onerror = function () {
+                showStatus('Erro na pesquisa por voz. Tente novamente.', 'error');
+            };
+
+            searchRecognition.onend = function () {
+                hideStatus();
+            };
+
+            searchRecognition.start();
+        });
+
+        // Botão limpar pesquisa
+        clearBtn.addEventListener('click', function () {
+            searchInput.value = '';
+            loadNotes();
+        });
+
+        // Pesquisa em tempo real
+        searchInput.addEventListener('input', function () {
+            filterNotes(this.value);
+        });
+
+        // Salvar nota
+        saveBtn.addEventListener('click', function () {
+            const title = titleInput.value.trim();
+            const content = contentTextarea.value.trim();
+
+            if (!title && !content) {
+                alert('Digite pelo menos um título ou conteúdo para a nota.');
+                return;
+            }
+
+            const note = {
+                title: title || 'Nota sem título',
+                content: content,
+                date: new Date().toISOString()
+            };
+
+            if (currentEditingNote) {
+                note.id = currentEditingNote.id;
+                updateNote(note);
+            } else {
+                saveNote(note);
+            }
+
+            noteModal.style.display = 'none';
+        });
+
+        // Cancelar edição
+        cancelBtn.addEventListener('click', function () {
+            stopCurrentReading(); // Para reprodução se estiver ativa
+            noteModal.style.display = 'none';
+        });
+
+        // Fechar modal clicando fora
+        noteModal.addEventListener('click', function (e) {
+            if (e.target === noteModal) {
+                stopCurrentReading(); // Para reprodução se estiver ativa
+                noteModal.style.display = 'none';
+            }
+        });
+
+        // Salvar nota no IndexedDB
+        function saveNote(note) {
+            const transaction = db.transaction(['notes'], 'readwrite');
+            const objectStore = transaction.objectStore('notes');
+            const request = objectStore.add(note);
+
+            request.onsuccess = function () {
+                loadNotes();
+                showStatus('✅ Nota salva com sucesso!', 'success');
+                setTimeout(hideStatus, 2000);
+            };
+
+            request.onerror = function () {
+                alert('Erro ao salvar nota');
+            };
+        }
+
+        // Atualizar nota
+        function updateNote(note) {
+            const transaction = db.transaction(['notes'], 'readwrite');
+            const objectStore = transaction.objectStore('notes');
+            const request = objectStore.put(note);
+
+            request.onsuccess = function () {
+                loadNotes();
+                showStatus('✅ Nota atualizada com sucesso!', 'success');
+                setTimeout(hideStatus, 2000);
+            };
+
+            request.onerror = function () {
+                alert('Erro ao atualizar nota');
+            };
+        }
+
+        // Carregar notas
+        function loadNotes() {
+            const transaction = db.transaction(['notes'], 'readonly');
+            const objectStore = transaction.objectStore('notes');
+            const request = objectStore.getAll();
+
+            request.onsuccess = function (event) {
+                const notes = event.target.result;
+                displayNotes(notes.reverse()); // Mais recentes primeiro
+            };
+        }
+
+        // Exibir notas
+        function displayNotes(notes) {
+            if (notes.length === 0) {
+                notesList.innerHTML = `
+                    <div class="empty-state">
+                        <p>Nenhuma nota encontrada</p>
+                        <small>Toque no botão acima para criar sua primeira nota</small>
+                    </div>
+                `;
+                return;
+            }
+
+            notesList.innerHTML = notes.map(note => `
+                <div class="note-item" onclick="editNote(${note.id})" data-note-id="${note.id}">
+                    <div class="note-actions">
+                        <button 
+                            class="play-btn" 
+                            onclick="event.stopPropagation(); toggleReadNote(${note.id}, '${escapeForOnClick(note.title)}', '${escapeForOnClick(note.content)}')"
+                        >▶️</button>
+
+                        <button 
+                            class="delete-btn" 
+                            onclick="event.stopPropagation(); deleteNote(${note.id})"
+                        >×</button>
+                    </div>
+                    <div class="note-title">${escapeHtml(note.title)}</div>
+                    <div class="note-content">${escapeHtml(truncateText(note.content, 100))}</div>
+                    <div class="note-date">${new Date(note.date).toLocaleString('pt-BR')}</div>
+                </div>
+            `).join('');
+
+
+        }
+        function escapeForOnClick(str) {
+            return str
+                .replace(/\\/g, '\\\\')        // barra invertida
+                .replace(/'/g, "\\'")          // aspas simples
+                .replace(/"/g, '&quot;')       // aspas duplas (HTML)
+                .replace(/\n/g, '\\n')         // quebra de linha
+                .replace(/\r/g, '')            // retorno de carro
+                .replace(/</g, '&lt;')         // menor que
+                .replace(/>/g, '&gt;')         // maior que
+                .replace(/&/g, '&amp;');       // e comercial
+        }
+
+        // Filtrar notas
+        function filterNotes(searchText) {
+            if (!searchText.trim()) {
+                loadNotes();
+                return;
+            }
+
+            const transaction = db.transaction(['notes'], 'readonly');
+            const objectStore = transaction.objectStore('notes');
+            const request = objectStore.getAll();
+
+            request.onsuccess = function (event) {
+                const notes = event.target.result;
+                const filteredNotes = notes.filter(note =>
+                    note.title.toLowerCase().includes(searchText.toLowerCase()) ||
+                    note.content.toLowerCase().includes(searchText.toLowerCase())
+                );
+                displayNotes(filteredNotes.reverse());
+            };
+        }
+
+        // Editar nota
+        function editNote(id) {
+            stopCurrentReading(); // Para reprodução antes de abrir modal
+
+            const transaction = db.transaction(['notes'], 'readonly');
+            const objectStore = transaction.objectStore('notes');
+            const request = objectStore.get(id);
+
+            request.onsuccess = function (event) {
+                const note = event.target.result;
+                currentEditingNote = note;
+                titleInput.value = note.title;
+                contentTextarea.value = note.content;
+                noteModal.style.display = 'block';
+            };
+        }
+
+        // Deletar nota
+        function deleteNote(id) {
+            if (confirm('Tem certeza que deseja excluir esta nota?')) {
+                const transaction = db.transaction(['notes'], 'readwrite');
+                const objectStore = transaction.objectStore('notes');
+                const request = objectStore.delete(id);
+
+                request.onsuccess = function () {
+                    loadNotes();
+                    showStatus('🗑️ Nota excluída', 'success');
+                    setTimeout(hideStatus, 2000);
+                };
+            }
+        }
+
+        // Inicializar aplicação
+        document.addEventListener('DOMContentLoaded', function () {
+            if (initSpeechRecognition()) {
+                initDB();
+            }
+        });
+    </script>
+</body>
+
+</html>
