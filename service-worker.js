@@ -1,4 +1,4 @@
-const CACHE_NAME = 'meu-site-cache-v1.3';
+const CACHE_NAME = 'meu-site-cache-v1.5';
 const urlsToCache = [
     './',
     './icon-512x512.png',
