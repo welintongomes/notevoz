@@ -237,7 +237,7 @@
 
         .modal-content {
             position: absolute;
-            top: 50%;
+            top: 45%;
             left: 50%;
             transform: translate(-50%, -50%);
             background: white;
@@ -296,7 +296,7 @@
         }
 
         .content-voice-btn {
-            width: 100%;
+            width: 30%;
             height: 50px;
             border-radius: 40px;
             border: none;
@@ -492,9 +492,9 @@
         </div>
         <div class="import-export-buttons">
             <button id="importBtn">📥 Importar</button>
+            <button id="clearAllBtn">🧹 Limpar Tudo</button>
             <button id="exportBtn">📤 Exportar</button>
             <input type="file" id="importInput" accept=".json" style="display: none;">
-            <button id="clearAllBtn">🧹 Limpar Tudo</button>
         </div>
     </div>
 
@@ -508,11 +508,12 @@
             <div class="content-controls">
                 <textarea class="content-textarea" id="contentTextarea" placeholder="Conteúdo da nota..."></textarea>
             </div>
-            <div>
+            <!-- <div>
                 <button class="content-voice-btn" id="contentVoiceBtn">🎤</button>
-            </div>
+            </div> -->
 
             <div class="modal-buttons">
+                <button class="content-voice-btn" id="contentVoiceBtn">🎤</button>
                 <button class="save-btn" id="saveBtn">Salvar</button>
                 <button class="cancel-btn" id="cancelBtn">Cancelar</button>
             </div>
