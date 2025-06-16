@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notas por Voz</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="shortcut icon" href="icon-512x512.png" type="image/png">
     <style>
         * {
             margin: 0;
@@ -16,7 +18,7 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 20px;
+            padding: 11px;
         }
 
         .container {
@@ -46,8 +48,8 @@
         }
 
         .voice-btn {
-            width: 120px;
-            height: 120px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             border: none;
             background: linear-gradient(135deg, #ff6b6b, #ee5a24);
@@ -94,20 +96,32 @@
         }
 
         .search-container {
-            padding: 10px 20px 20px;
+            margin: 0px 20px 5px;
             display: flex;
-            gap: 10px;
             align-items: center;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 25px;
+            padding: 6px 10px;
+            max-width: 100%;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            position: relative;
         }
 
         .search-input {
             flex: 1;
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 25px;
-            font-size: 13px;
+            border: none;
             outline: none;
-            transition: border-color 0.3s ease;
+            font-size: 15px;
+            padding: 15px;
+            border-radius: 25px;
+        }
+
+        .clear-btn {
+            display: none;
+            /* Escondido por padrão */
+            background: #f39c12;
+            color: white;
         }
 
         .search-input:focus {
@@ -130,18 +144,13 @@
             color: white;
         }
 
-        .clear-btn {
-            background: #f39c12;
-            color: white;
-        }
-
         .search-voice-btn:hover,
         .clear-btn:hover {
             transform: scale(1.1);
         }
 
         .notes-list {
-            max-height: 450px;
+            max-height: 540px;
             overflow-y: auto;
             padding: 0 20px 20px;
         }
@@ -186,7 +195,7 @@
         .note-actions {
             float: right;
             display: flex;
-            gap: 5px;
+            gap: 15px;
         }
 
         .delete-btn,
@@ -370,46 +379,86 @@
             background: #e6f3ff;
             color: #2980b9;
         }
-#manual-title-box {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: 20px 16px;
-    padding: 7px;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-}
 
-#manualTitleInput {
-    flex: 1;
-    padding: 10px 14px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    outline: none;
-    transition: border-color 0.2s ease-in-out;
-}
+        #manual-title-box {
+            display: flex;
+            gap: 10px;
+            margin: 2px 21px;
+            padding: 7px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            align-items: center;
+        }
 
-#manualTitleInput:focus {
-    border-color: #007bff;
-}
+        #manualTitleInput {
+            flex: 1;
+            padding: 10px 14px;
+            font-size: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            outline: none;
+            transition: border-color 0.2s ease-in-out;
+        }
 
-#manualTitleBtn {
-    padding: 10px 18px;
-    font-size: 15px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
+        #manualTitleInput:focus {
+            border-color: #007bff;
+        }
 
-#manualTitleBtn:hover {
-    background-color: #0056b3;
-}
+        #manualTitleBtn {
+            padding: 10px 18px;
+            font-size: 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
 
+        #manualTitleBtn:hover {
+            background-color: #0056b3;
+        }
+
+        .import-export-buttons {
+            display: flex;
+            gap: 1px;
+            margin-top: 15px;
+            justify-content: space-between;
+        }
+
+        #importBtn,
+        #exportBtn {
+            padding: 10px 16px;
+            font-size: 14px;
+            background-color: #007bff;
+            border: none;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        #importBtn:hover,
+        #exportBtn:hover {
+            background-color: #0056b3;
+        }
+
+        #clearAllBtn {
+            padding: 10px 16px;
+            font-size: 14px;
+            background-color: #dc3545;
+            /* vermelho */
+            border: none;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        #clearAllBtn:hover {
+            background-color: #b02a37;
+        }
     </style>
 </head>
 
@@ -418,22 +467,19 @@
         <div class="header">
             <h1>🎤 Notas por Voz</h1>
         </div>
-
-        <div class="main-controls">
-            <button class="voice-btn" id="mainVoiceBtn">🎤</button>
-            <div class="btn-label">Toque para falar</div>
-        </div>
         <div id="manual-title-box">
+            <button class="voice-btn" id="mainVoiceBtn">🎤</button>
             <input type="text" id="manualTitleInput" placeholder="Digite o título da nota" />
-            <button id="manualTitleBtn">Criar nota</button>
+            <button id="manualTitleBtn">+</button>
         </div>
 
 
         <div id="status" class="status" style="display: none;"></div>
 
         <div class="search-container">
-            <input type="text" class="search-input" id="searchInput" placeholder="Pesquisar nas notas...">
             <button class="search-voice-btn" id="searchVoiceBtn">🎤</button>
+            <input type="text" class="search-input" id="searchInput" placeholder="Pesquisar nas notas...">
+
             <button class="clear-btn" id="clearBtn">✕</button>
         </div>
 
@@ -442,6 +488,12 @@
                 <p>Nenhuma nota ainda</p>
                 <small>Toque no botão acima para criar sua primeira nota</small>
             </div>
+        </div>
+        <div class="import-export-buttons">
+            <button id="importBtn">📥 Importar</button>
+            <button id="exportBtn">📤 Exportar</button>
+            <input type="file" id="importInput" accept=".json" style="display: none;">
+            <button id="clearAllBtn">🧹 Limpar Tudo</button>
         </div>
     </div>
 
@@ -458,10 +510,12 @@
             <div>
                 <button class="content-voice-btn" id="contentVoiceBtn">🎤</button>
             </div>
+
             <div class="modal-buttons">
                 <button class="save-btn" id="saveBtn">Salvar</button>
                 <button class="cancel-btn" id="cancelBtn">Cancelar</button>
             </div>
+
         </div>
     </div>
 
@@ -537,6 +591,26 @@
         function hideStatus() {
             status.style.display = 'none';
         }
+        // Mostrar ou esconder o botão "✕" com base no texto do input
+        searchInput.addEventListener('input', function () {
+            if (searchInput.value.trim() !== '') {
+                clearBtn.style.display = 'inline';
+            } else {
+                clearBtn.style.display = 'none';
+            }
+        });
+
+        // Botão "✕" limpa o campo e esconde a si mesmo
+        clearBtn.addEventListener('click', function () {
+            searchInput.value = '';
+            clearBtn.style.display = 'none';
+            loadNotes();
+        });
+
+        function updateClearButtonVisibility() {
+            clearBtn.style.display = searchInput.value.trim() !== '' ? 'inline' : 'none';
+        }
+
 
         // Botão principal de voz
         mainVoiceBtn.addEventListener('click', function () {
@@ -576,32 +650,32 @@
         });
 
         const manualTitleInput = document.getElementById('manualTitleInput');
-const manualTitleBtn = document.getElementById('manualTitleBtn');
+        const manualTitleBtn = document.getElementById('manualTitleBtn');
 
-function openNoteFromTitle(title) {
-    if (!title.trim()) {
-        showStatus('Digite um título válido.', 'error');
-        return;
-    }
+        function openNoteFromTitle(title) {
+            if (!title.trim()) {
+                showStatus('Digite um título válido.', 'error');
+                return;
+            }
 
-    titleInput.value = title;
-    contentTextarea.value = '';
-    currentEditingNote = null;
-    noteModal.style.display = 'block';
-    contentTextarea.focus();
-}
+            titleInput.value = title;
+            contentTextarea.value = '';
+            currentEditingNote = null;
+            noteModal.style.display = 'block';
+            contentTextarea.focus();
+        }
 
-// Ao clicar no botão
-manualTitleBtn.addEventListener('click', () => {
-    openNoteFromTitle(manualTitleInput.value);
-});
+        // Ao clicar no botão
+        manualTitleBtn.addEventListener('click', () => {
+            openNoteFromTitle(manualTitleInput.value);
+        });
 
-// Ao pressionar Enter no input
-manualTitleInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        openNoteFromTitle(manualTitleInput.value);
-    }
-});
+        // Ao pressionar Enter no input
+        manualTitleInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                openNoteFromTitle(manualTitleInput.value);
+            }
+        });
 
 
         // Função para escapar HTML e preservar quebras de linha
@@ -745,6 +819,7 @@ manualTitleInput.addEventListener('keypress', (e) => {
             searchRecognition.onresult = function (event) {
                 const searchText = event.results[0][0].transcript;
                 searchInput.value = searchText;
+                updateClearButtonVisibility();
                 filterNotes(searchText);
             };
 
@@ -953,6 +1028,79 @@ manualTitleInput.addEventListener('keypress', (e) => {
                 };
             }
         }
+        // Exportar notas como JSON
+        document.getElementById('exportBtn').addEventListener('click', function () {
+            const transaction = db.transaction(['notes'], 'readonly');
+            const store = transaction.objectStore('notes');
+            const request = store.getAll();
+
+            request.onsuccess = function () {
+                const notes = request.result;
+                const blob = new Blob([JSON.stringify(notes, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'minhas-notas.json';
+                a.click();
+
+                URL.revokeObjectURL(url);
+            };
+        });
+
+        // Importar notas de um arquivo JSON
+        document.getElementById('importBtn').addEventListener('click', function () {
+            document.getElementById('importInput').click();
+        });
+
+        document.getElementById('importInput').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    const notes = JSON.parse(e.target.result);
+
+                    const transaction = db.transaction(['notes'], 'readwrite');
+                    const store = transaction.objectStore('notes');
+
+                    notes.forEach(note => {
+                        // Remover ID para evitar conflito se for autoIncrement
+                        delete note.id;
+                        store.add(note);
+                    });
+
+                    transaction.oncomplete = function () {
+                        loadNotes();
+                        alert('Notas importadas com sucesso!');
+                    };
+                } catch (err) {
+                    alert('Erro ao importar: arquivo inválido.');
+                }
+            };
+            reader.readAsText(file);
+        });
+        document.getElementById('clearAllBtn').addEventListener('click', function () {
+            if (!confirm('Tem certeza que deseja apagar todas as notas? Esta ação não pode ser desfeita.')) {
+                return;
+            }
+
+            const transaction = db.transaction(['notes'], 'readwrite');
+            const store = transaction.objectStore('notes');
+            const clearRequest = store.clear();
+
+            clearRequest.onsuccess = function () {
+                loadNotes(); // Recarrega a lista limpa
+                alert('Todas as notas foram apagadas com sucesso.');
+            };
+
+            clearRequest.onerror = function () {
+                alert('Erro ao tentar apagar as notas.');
+            };
+        });
+
+
 
         // Inicializar aplicação
         document.addEventListener('DOMContentLoaded', function () {
@@ -960,6 +1108,14 @@ manualTitleInput.addEventListener('keypress', (e) => {
                 initDB();
             }
         });
+        
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(reg => console.log('Service worker registered'))
+                    .catch(err => console.log('Service worker error:', err));
+            });
+        }
     </script>
 </body>
 
