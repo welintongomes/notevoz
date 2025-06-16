@@ -150,7 +150,7 @@
         }
 
         .notes-list {
-            max-height: 512px;
+            max-height: 500px;
             overflow-y: auto;
             padding: 0 20px 20px;
         }
@@ -242,9 +242,10 @@
             transform: translate(-50%, -50%);
             background: white;
             border-radius: 20px;
-            padding: 30px;
-            width: 90%;
+            padding: 10px;
+            width: 92%;
             max-width: 700px;
+            min-height: 650px;
         }
 
         .modal-header {
@@ -273,7 +274,7 @@
 
         .content-textarea {
             flex: 1;
-            min-height: 150px;
+            min-height: 380px;
             padding: 15px;
             border: 2px solid #e0e0e0;
             border-radius: 10px;
@@ -1108,7 +1109,7 @@
                 initDB();
             }
         });
-        
+
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('service-worker.js')
